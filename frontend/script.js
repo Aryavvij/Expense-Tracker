@@ -408,24 +408,36 @@ function initialSetup() {
 
 // ===================== 5. EXPOSE FUNCTIONS & INITIALIZE ===================== 
 
+// script.js (Simplified and corrected checkAuth)
+
 function checkAuth() {
-    const token = getToken();
-    
-    if (window.location.pathname.includes('dashboard.html')) {
-        if (!token) {
-          window.location.href = '/index.html';
-        } else {
-            initialSetup();
-        }
-    } 
-    else if (window.location.pathname.includes('index.html') && !window.location.pathname.includes('dashboard.html')) {
-        if (token) {
-          window.location.href = '/dashboard.html';
-        } else {
-            setupAuthListeners();
-        }
-    }
+  const token = getToken();
+  // CRITICAL: We need to know if the page has the dashboard elements.
+  const isDashboardPage = window.location.pathname.includes('dashboard.html');
+  
+  if (isDashboardPage) {
+      // If we are on the dashboard page, we MUST have a token.
+      if (!token) {
+          // No token? Send to login page (index.html).
+          window.location.href = '/index.html'; 
+      } else {
+          // Token found? Load the buttons and data.
+          initialSetup();
+      }
+  } 
+  else if (window.location.pathname.includes('index.html')) {
+      // If we are on the login page (index.html), check if we should be redirected.
+      if (token) {
+          // Token found? Send to dashboard.
+          window.location.href = '/dashboard.html'; 
+      } else {
+          // No token? Stay on login page and set up forms.
+          setupAuthListeners();
+      }
+  }
 }
+
+// ... rest of the code ...
 
 // Expose functions globally 
 window.setBudget = setBudget;
