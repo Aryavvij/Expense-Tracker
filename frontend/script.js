@@ -14,7 +14,8 @@ function getToken() {
 
 function logout() {
     localStorage.removeItem('token');
-    window.location.href = '/index.html';
+    // FIX: Redirects to the login page, which we now know is the new index.html
+    window.location.href = '/'; 
 }
 
 function setupAuthListeners() {
@@ -54,7 +55,8 @@ async function handleLogin(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/login`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
-        window.location.href = '/dashboard.html';
+        // FIX: Redirects to the dashboard page
+        window.location.href = '/dashboard.html'; 
     } catch (err) {
         messageDisplay.textContent = err.message || 'Login failed. Please check your credentials.';
         messageDisplay.style.display = 'block';
@@ -71,6 +73,7 @@ async function handleRegister(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/register`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
+        // FIX: Redirects to the dashboard page
         window.location.href = '/dashboard.html';
     } catch (err) {
         messageDisplay.textContent = err.message || 'Registration failed.';
@@ -80,7 +83,6 @@ async function handleRegister(e) {
 
 // ======================================================================
 // 2. DATA FETCHING & RENDERING FUNCTIONS 
-// (Must define before initialSetup uses them)
 // ======================================================================
 
 async function fetchData(url, data = null, method = 'GET') {
@@ -100,7 +102,7 @@ async function fetchData(url, data = null, method = 'GET') {
     if (!response.ok) {
         let errorBody = await response.text();
 
-        if (response.status === 401 && !window.location.pathname.includes('auth.html')) {
+        if (response.status === 401 && !window.location.pathname.includes('index.html')) {
             logout(); 
         }
         
@@ -176,9 +178,44 @@ function renderExpenseTable(expenses) {
   });
 }
 
+async function loadDataForMonth() {
+  const monthSelect = document.getElementById("monthSelect");
+  const yearSelect = document.getElementById("yearSelect");
+
+  // CRITICAL FIX: Guard clause to prevent fetching with NaN/null values.
+  if (!monthSelect || !yearSelect || !monthSelect.value || !yearSelect.value || isNaN(parseInt(monthSelect.value))) {
+      console.warn("Month/Year selection not ready. Skipping data load.");
+      return; 
+  }
+  
+  try {
+    const month = parseInt(monthSelect.value);
+    const year = parseInt(yearSelect.value);
+
+    const summary = await fetchData(`${API_URL}/summary?month=${month}&year=${year}`);
+    
+    const totalBudgetCategory = summary.find(c => c.isBudget) || { limit: 0, spent: 0, _id: null };
+    const expenseCategories = summary.filter(c => !c.isBudget);
+
+    updateOverview(totalBudgetCategory, expenseCategories);
+    updateCategorySelect(expenseCategories);
+    renderCategoryTable(expenseCategories);
+
+    const expenses = await fetchData(`${API_URL}/expenses?month=${month}&year=${year}`);
+    renderExpenseTable(expenses);
+
+  } catch (err) {
+    console.error("Error loading data:", err);
+
+    updateOverview({ limit: 0, spent: 0, _id: null }, []);
+    updateCategorySelect([]);
+    renderCategoryTable([]);
+    renderExpenseTable([]);
+  }
+}
+
 // ======================================================================
 // 3. BUDGET, CATEGORY, EXPENSE HANDLERS 
-// (Must be defined before initialSetup attaches listeners)
 // ======================================================================
 
 async function setBudget() {
@@ -298,45 +335,6 @@ async function deleteExpense(id) {
   }
 }
 
-// ===================== DATA FETCHING (loadDataForMonth) ===================== 
-// Placed below handlers, but above initialSetup
-
-async function loadDataForMonth() {
-  const monthSelect = document.getElementById("monthSelect");
-  const yearSelect = document.getElementById("yearSelect");
-
-  // CRITICAL FIX: Guard clause to prevent fetching with NaN/null values.
-  if (!monthSelect || !yearSelect || !monthSelect.value || !yearSelect.value || isNaN(parseInt(monthSelect.value))) {
-      console.warn("Month/Year selection not ready. Skipping data load.");
-      return; 
-  }
-  
-  try {
-    const month = parseInt(monthSelect.value);
-    const year = parseInt(yearSelect.value);
-
-    const summary = await fetchData(`${API_URL}/summary?month=${month}&year=${year}`);
-    
-    const totalBudgetCategory = summary.find(c => c.isBudget) || { limit: 0, spent: 0, _id: null };
-    const expenseCategories = summary.filter(c => !c.isBudget);
-
-    updateOverview(totalBudgetCategory, expenseCategories);
-    updateCategorySelect(expenseCategories);
-    renderCategoryTable(expenseCategories);
-
-    const expenses = await fetchData(`${API_URL}/expenses?month=${month}&year=${year}`);
-    renderExpenseTable(expenses);
-
-  } catch (err) {
-    console.error("Error loading data:", err);
-
-    updateOverview({ limit: 0, spent: 0, _id: null }, []);
-    updateCategorySelect([]);
-    renderCategoryTable([]);
-    renderExpenseTable([]);
-  }
-}
-
 
 // ===================== 4. INITIAL SETUP (The final definition that uses all the above functions) ===================== 
 
@@ -411,85 +409,22 @@ function initialSetup() {
 // ===================== 5. EXPOSE FUNCTIONS & INITIALIZE ===================== 
 
 function checkAuth() {
-    // ... (Your checkAuth logic remains here) ...
     const token = getToken();
     
-    if (window.location.pathname.includes('index.html')) {
+    if (window.location.pathname.includes('dashboard.html')) {
         if (!token) {
           window.location.href = '/index.html';
         } else {
             initialSetup();
         }
     } 
-    else if (window.location.pathname.includes('auth.html')) {
+    else if (window.location.pathname.includes('index.html') && !window.location.pathname.includes('dashboard.html')) {
         if (token) {
           window.location.href = '/dashboard.html';
         } else {
             setupAuthListeners();
         }
     }
-}
-
-function updateOverview(budgetCat, expenseCats) {
-  const totalBudget = budgetCat.limit || 0;
-  const totalSpent = expenseCats.reduce((sum, c) => sum + c.spent, 0);
-  
-  document.getElementById("totalBudgetInput").value = totalBudget > 0 ? totalBudget.toFixed(2) : '';
-  document.getElementById("totalBudgetDisplay").innerText = totalBudget.toFixed(2);
-  document.getElementById("totalSpentDisplay").innerText = totalSpent.toFixed(2);
-  document.getElementById("remainingBudgetDisplay").innerText = (totalBudget - totalSpent).toFixed(2);
-}
-
-function updateCategorySelect(categories) {
-  const select = document.getElementById("categorySelect");
-  select.innerHTML = '<option value="" disabled selected>Select Category</option>';
-  categories.forEach(cat => {
-    const option = document.createElement("option");
-    option.value = cat.name;
-    option.textContent = `${cat.name} (Limit: ₹${cat.limit.toFixed(2)})`;
-    select.appendChild(option);
-  });
-}
-
-function renderCategoryTable(categories) {
-  const container = document.getElementById("categoryBreakdownList");
-  container.innerHTML = "";
-
-  categories.forEach(cat => {
-    const div = document.createElement("div");
-    div.className = "category-box";
-    div.innerHTML = `
-      <div class="category-details">
-        <strong>${cat.name}</strong><br>
-        Spent: ₹${cat.spent.toFixed(2)} / Limit: ₹${cat.limit.toFixed(2)}<br>
-        Remaining: ₹${cat.remaining.toFixed(2)}
-      </div>
-      <div>
-        <button class="edit-btn" onclick="editCategory('${cat._id}', '${cat.name}', ${cat.limit})">Edit</button>
-        <button class="delete-btn" onclick="deleteCategory('${cat._id}')">Delete</button>
-      </div>
-    `;
-    container.appendChild(div);
-  });
-}
-
-function renderExpenseTable(expenses) {
-  const tbody = document.getElementById("expenseTableBody");
-  tbody.innerHTML = "";
-
-  expenses.forEach(exp => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `c
-      <td>${new Date(exp.date).toLocaleDateString()}</td>
-      <td>${exp.category}</td>
-      <td>₹${exp.amount.toFixed(2)}</td>
-      <td>${exp.note || "-"}</td>
-      <td>
-        <button class="delete-btn" onclick="deleteExpense('${exp._id}')">Delete</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
 }
 
 // Expose functions globally 
