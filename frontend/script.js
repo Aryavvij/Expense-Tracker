@@ -148,10 +148,11 @@ function initialSetup() {
 
   // --- FIX: Attach ALL form and button listeners safely ---
   
-  // 1. Set Budget Button (attached by ID now)
+  // 1. Set Budget Button (attached by ID now - Requires id="setBudgetButton" in index.html)
   const setBudgetButton = document.getElementById("setBudgetButton");
   if (setBudgetButton) {
       setBudgetButton.addEventListener("click", setBudget);
+      console.log("Budget listener attached."); // Added log for verification
   }
 
   // 2. Category Form Submit
@@ -167,6 +168,8 @@ function initialSetup() {
 // ===================== BUDGET SETUP ===================== 
 // ... (Your existing setBudget function remains here) ...
 async function setBudget() {
+  console.log("--- setBudget function called ---"); // Added log for verification
+  
   const month = parseInt(document.getElementById("monthSelect").value);
   const year = parseInt(document.getElementById("yearSelect").value);
   const budgetInput = document.getElementById("totalBudgetInput");
@@ -198,9 +201,6 @@ async function setBudget() {
 
 
 // ===================== CATEGORY LOGIC ===================== 
-// Note: These handlers were likely defined globally before. 
-// We are moving the listener attachment into initialSetup, but keeping the functions global.
-
 async function handleCategorySubmit(e) {
     e.preventDefault();
 
@@ -325,15 +325,13 @@ async function fetchData(url, data = null, method = 'GET') {
     return response.status !== 204 ? await response.json() : {};
 }
 
-// script.js
-
 async function loadDataForMonth() {
   const monthSelect = document.getElementById("monthSelect");
   const yearSelect = document.getElementById("yearSelect");
 
   // CRITICAL FIX: Guard clause to prevent fetching with NaN/null values.
-  if (!monthSelect || !monthSelect.value || !yearSelect.value) {
-      console.warn("Month/Year selection not ready or element missing. Skipping data load.");
+  if (!monthSelect || !yearSelect || !monthSelect.value || !yearSelect.value || isNaN(parseInt(monthSelect.value))) {
+      console.warn("Month/Year selection not ready. Skipping data load.");
       return; 
   }
   
@@ -343,8 +341,6 @@ async function loadDataForMonth() {
     const year = parseInt(yearSelect.value);
 
     const summary = await fetchData(`${API_URL}/summary?month=${month}&year=${year}`);
-    // ... rest of the fetch logic continues below ...
-// ...
     
     const totalBudgetCategory = summary.find(c => c.isBudget) || { limit: 0, spent: 0, _id: null };
     const expenseCategories = summary.filter(c => !c.isBudget);
@@ -427,6 +423,8 @@ function renderExpenseTable(expenses) {
     tbody.appendChild(tr);
   });
 }
+
+console.log("--- SCRIPT LOADED SUCCESSFULLY ---"); // Added log for verification
 
 // Expose functions globally (optional, but good practice for inline HTML)
 window.setBudget = setBudget;
