@@ -11,6 +11,6 @@ const categorySchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Ensure unique categories per month/year/USER
-categorySchema.index({ name: 1, month: 1, year: 1, userId: 1 }, { unique: true });
+categorySchema.index({ name: 1, month: 1, year: 1, userId: 1 }, { unique: true }); 
 
 module.exports = mongoose.model('Category', categorySchema);
