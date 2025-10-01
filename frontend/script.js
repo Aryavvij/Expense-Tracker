@@ -14,7 +14,7 @@ function getToken() {
 
 function logout() {
     localStorage.removeItem('token');
-    window.location.href = '/auth.html';
+    window.location.href = '/index.html';
 }
 
 function setupAuthListeners() {
@@ -54,7 +54,7 @@ async function handleLogin(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/login`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
-        window.location.href = '/index.html';
+        window.location.href = '/dashboard.html';
     } catch (err) {
         messageDisplay.textContent = err.message || 'Login failed. Please check your credentials.';
         messageDisplay.style.display = 'block';
@@ -71,7 +71,7 @@ async function handleRegister(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/register`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
-        window.location.href = '/index.html';
+        window.location.href = '/dashboard.html';
     } catch (err) {
         messageDisplay.textContent = err.message || 'Registration failed.';
         messageDisplay.style.display = 'block';
@@ -416,14 +416,14 @@ function checkAuth() {
     
     if (window.location.pathname.includes('index.html')) {
         if (!token) {
-          window.location.href = '/auth.html';
+          window.location.href = '/index.html';
         } else {
             initialSetup();
         }
     } 
     else if (window.location.pathname.includes('auth.html')) {
         if (token) {
-          window.location.href = '/index.html';
+          window.location.href = '/dashboard.html';
         } else {
             setupAuthListeners();
         }
