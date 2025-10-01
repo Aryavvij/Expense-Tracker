@@ -315,11 +315,26 @@ async function fetchData(url, data = null, method = 'GET') {
     return response.status !== 204 ? await response.json() : {};
 }
 
+// script.js
+
 async function loadDataForMonth() {
+  const monthSelect = document.getElementById("monthSelect");
+  const yearSelect = document.getElementById("yearSelect");
+
+  // CRITICAL FIX: Guard clause to prevent fetching with NaN/null values.
+  if (!monthSelect || !monthSelect.value || !yearSelect.value) {
+      console.warn("Month/Year selection not ready or element missing. Skipping data load.");
+      return; 
+  }
+  
   try {
-    const month = parseInt(document.getElementById("monthSelect").value);
-    const year = parseInt(document.getElementById("yearSelect").value);
+    // Only parse and fetch if values are guaranteed to be present
+    const month = parseInt(monthSelect.value);
+    const year = parseInt(yearSelect.value);
+
     const summary = await fetchData(`${API_URL}/summary?month=${month}&year=${year}`);
+    // ... rest of the fetch logic continues below ...
+// ...
     
     const totalBudgetCategory = summary.find(c => c.isBudget) || { limit: 0, spent: 0, _id: null };
     const expenseCategories = summary.filter(c => !c.isBudget);
