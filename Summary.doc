@@ -36,3 +36,7 @@ Final Technical Stack and Configuration
 - CORS Policy: Set to the universal app.use(cors()) to ensure maximum compatibility between the frontend and the running API.
 - Database: MongoDB Atlas is used for persistent, cloud-based data storage, managed via Mongoose models.
 - Frontend (UI): Built with pure HTML, CSS, and JavaScript. Data retrieval uses the fetch API
+
+API URL - https://expense-tracker-v5ei.onrender.com
+Site Link - https://expense-tracker-seven-omega-89.vercel.app
+Code Repository Link - https://github.com/Aryavvij/Expense-Tracker.git

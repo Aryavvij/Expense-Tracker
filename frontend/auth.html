@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Register - Expense Tracker</title>
+    <style>
+        :root {
+            --primary-navy: #102A43;
+            --primary-accent: #00B8D9; /* Teal */
+            --background-cream: #F9F7F1;
+            --white: #FFFFFF;
+            --radius: 8px;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background-cream);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .auth-container {
+            background-color: var(--white);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 {
+            color: var(--primary-navy);
+            font-weight: 600;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #E5E7EB;
+            border-radius: var(--radius);
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-navy);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: var(--primary-accent);
+        }
+        .switch-link {
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        .switch-link a {
+            color: var(--primary-accent);
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        #message {
+            margin-bottom: 15px;
+            color: var(--error-color);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Expense Tracker</h1>
+        
+        <div id="auth-forms">
+            <form id="loginForm">
+                <h2>Sign In</h2>
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <p id="message" style="color: red; display: none;"></p>
+                <button type="submit">Log In</button>
+            </form>
+
+            <form id="registerForm" style="display: none;">
+                <h2>Create Account</h2>
+                <input type="email" id="registerEmail" placeholder="Email" required>
+                <input type="password" id="registerPassword" placeholder="Password (min 6 chars)" required>
+                <p id="registerMessage" style="color: red; display: none;"></p>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+
+        <div class="switch-link">
+            <span id="switchText">Don't have an account? </span>
+            <a id="switchButton">Register here</a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

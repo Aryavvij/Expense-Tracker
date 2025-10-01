@@ -1,13 +1,123 @@
+// Set this to your live Render API URL if you are testing the deployed site, 
+// or http://127.0.0.1:3001 if you are testing locally.
 const API_URL = "https://expense-tracker-v5ei.onrender.com"; 
 
-// ===================== INITIAL SETUP ===================== //
+// ======================================================================
+//                              AUTHENTICATION CORE
+// ======================================================================
+
+function getToken() {
+    // Get the stored token
+    return localStorage.getItem('token');
+}
+
+function checkAuth() {
+    const token = getToken();
+    
+    // Check if the current page is the main tracker page
+    if (window.location.pathname.includes('index.html')) {
+        if (!token) {
+            // If on the main app page but no token, redirect to login
+            window.location.href = 'auth.html';
+        } else {
+            // If token exists, proceed to load financial data
+            initialSetup();
+        }
+    } 
+    // Check if the current page is the authentication page
+    else if (window.location.pathname.includes('auth.html')) {
+        if (token) {
+            // If token exists, redirect straight to the main app
+            window.location.href = 'index.html';
+        } else {
+            // Set up form listeners if no token is found
+            setupAuthListeners();
+        }
+    }
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    window.location.href = 'auth.html';
+}
+
+function setupAuthListeners() {
+    // Check if we are actually on auth.html before setting listeners
+    if (!document.getElementById('loginForm')) return; 
+
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const switchButton = document.getElementById('switchButton');
+
+    // Handle form switching
+    switchButton.addEventListener('click', () => {
+        const isLoginVisible = loginForm.style.display !== 'none';
+        
+        if (isLoginVisible) {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            document.getElementById('switchText').textContent = "Already have an account? ";
+            switchButton.textContent = "Log In here";
+        } else {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            document.getElementById('switchText').textContent = "Don't have an account? ";
+            switchButton.textContent = "Register here";
+        }
+    });
+
+    loginForm.addEventListener('submit', handleLogin);
+    registerForm.addEventListener('submit', handleRegister);
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const messageDisplay = document.getElementById('message');
+    messageDisplay.style.display = 'none'; // Clear previous errors
+
+    try {
+        const data = await fetchData(`${API_URL}/auth/login`, { email, password }, "POST");
+        localStorage.setItem('token', data.token);
+        window.location.href = 'index.html'; // Redirect to main app
+    } catch (err) {
+        messageDisplay.textContent = err.message || 'Login failed. Please check your credentials.';
+        messageDisplay.style.display = 'block';
+    }
+}
+
+async function handleRegister(e) {
+    e.preventDefault();
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const messageDisplay = document.getElementById('registerMessage');
+    messageDisplay.style.display = 'none'; // Clear previous errors
+
+    try {
+        const data = await fetchData(`${API_URL}/auth/register`, { email, password }, "POST");
+        localStorage.setItem('token', data.token);
+        window.location.href = 'index.html'; // Redirect to main app
+    } catch (err) {
+        messageDisplay.textContent = err.message || 'Registration failed.';
+        messageDisplay.style.display = 'block';
+    }
+}
+
+// ===================== INITIAL SETUP (financial data loading) ===================== 
 
 function initialSetup() {
+  // CRITICAL FIX: If the main element (Month Select) isn't here, stop executing main app code.
+  const monthSelect = document.getElementById("monthSelect");
+  
+  if (!monthSelect) {
+      return; 
+  }
+
   const date = new Date();
   const currentMonth = date.getMonth();
   const currentYear = date.getFullYear();
 
-  const monthSelect = document.getElementById("monthSelect");
   const yearSelect = document.getElementById("yearSelect");
 
  
@@ -36,11 +146,16 @@ function initialSetup() {
   monthSelect.addEventListener('change', loadDataForMonth);
   yearSelect.addEventListener('change', loadDataForMonth);
 
+  // FIX: Move the main form listeners inside initialSetup to ensure they are attached ONLY on index.html
+  document.getElementById("categoryForm").addEventListener("submit", handleCategorySubmit); 
+  document.getElementById("expenseForm").addEventListener("submit", handleExpenseSubmit); 
+  // END FIX
+
   loadDataForMonth();
 }
 
-// ===================== BUDGET SETUP ===================== //
-
+// ===================== BUDGET SETUP ===================== 
+// ... (Your existing setBudget function remains here) ...
 async function setBudget() {
   const month = parseInt(document.getElementById("monthSelect").value);
   const year = parseInt(document.getElementById("yearSelect").value);
@@ -71,27 +186,30 @@ async function setBudget() {
   }
 }
 
-// ===================== CATEGORY LOGIC ===================== //
 
-document.getElementById("categoryForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+// ===================== CATEGORY LOGIC ===================== 
+// Note: These handlers were likely defined globally before. 
+// We are moving the listener attachment into initialSetup, but keeping the functions global.
 
-  const month = parseInt(document.getElementById("monthSelect").value);
-  const year = parseInt(document.getElementById("yearSelect").value);
-  const name = document.getElementById("categoryName").value.trim();
-  const limit = parseFloat(document.getElementById("categoryLimit").value) || 0;
+async function handleCategorySubmit(e) {
+    e.preventDefault();
 
-  if (name && limit > 0) {
-    try {
-      await fetchData(`${API_URL}/categories`, { name, limit, month, year }, "POST");
-      document.getElementById("categoryForm").reset();
-      loadDataForMonth();
-    } catch (err) {
-      console.error("Error adding category:", err);
-      alert(err.message || "Failed to add category.");
+    const month = parseInt(document.getElementById("monthSelect").value);
+    const year = parseInt(document.getElementById("yearSelect").value);
+    const name = document.getElementById("categoryName").value.trim();
+    const limit = parseFloat(document.getElementById("categoryLimit").value) || 0;
+
+    if (name && limit > 0) {
+        try {
+        await fetchData(`${API_URL}/categories`, { name, limit, month, year }, "POST");
+        document.getElementById("categoryForm").reset();
+        loadDataForMonth();
+        } catch (err) {
+        console.error("Error adding category:", err);
+        alert(err.message || "Failed to add category.");
+        }
     }
-  }
-});
+}
 
 async function editCategory(id, currentName, currentLimit) {
     const newName = prompt("Enter new category name:", currentName);
@@ -129,27 +247,27 @@ async function deleteCategory(id) {
 }
 
 
-// ===================== EXPENSE LOGIC ===================== //
+// ===================== EXPENSE LOGIC ===================== 
 
-document.getElementById("expenseForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+async function handleExpenseSubmit(e) {
+    e.preventDefault();
 
-  const date = document.getElementById("date").value;
-  const category = document.getElementById("categorySelect").value;
-  const amount = parseFloat(document.getElementById("amount").value);
-  const note = document.getElementById("note").value;
+    const date = document.getElementById("date").value;
+    const category = document.getElementById("categorySelect").value;
+    const amount = parseFloat(document.getElementById("amount").value);
+    const note = document.getElementById("note").value;
 
-  if (category && amount > 0) {
-    try {
-      await fetchData(`${API_URL}/expenses`, { date, category, amount, note }, "POST");
-      document.getElementById("expenseForm").reset();
-      loadDataForMonth();
-    } catch (err) {
-      console.error("Error adding expense:", err);
-      alert("Failed to add expense.");
+    if (category && amount > 0) {
+        try {
+        await fetchData(`${API_URL}/expenses`, { date, category, amount, note }, "POST");
+        document.getElementById("expenseForm").reset();
+        loadDataForMonth();
+        } catch (err) {
+        console.error("Error adding expense:", err);
+        alert("Failed to add expense.");
+        }
     }
-  }
-});
+}
 
 async function deleteExpense(id) {
   if (!confirm("Are you sure you want to delete this expense?")) return;
@@ -161,13 +279,16 @@ async function deleteExpense(id) {
   }
 }
 
-// ===================== DATA FETCHING & RENDERING ===================== //
+// ===================== DATA FETCHING & RENDERING ===================== 
 
+// IMPORTANT: Updated fetchData to automatically include the JWT token
 async function fetchData(url, data = null, method = 'GET') {
     const config = {
         method: method,
         headers: {
             'Content-Type': 'application/json',
+            // ADDED: Include the JWT token in the Authorization header
+            'Authorization': `Bearer ${getToken()}` 
         }
     };
     if (data) {
@@ -178,6 +299,12 @@ async function fetchData(url, data = null, method = 'GET') {
 
     if (!response.ok) {
         let errorBody = await response.text();
+
+        // ADDED: If the token is invalid/expired, log the user out
+        if (response.status === 401 && !window.location.pathname.includes('auth.html')) {
+            logout(); // Log out and redirect
+        }
+        
         try {
             errorBody = JSON.parse(errorBody);
         } catch(e) { /* ignored */ }
@@ -276,9 +403,17 @@ function renderExpenseTable(expenses) {
   });
 }
 
+// Expose functions globally (optional, but good practice for inline HTML)
 window.setBudget = setBudget;
 window.editCategory = editCategory;
 window.deleteCategory = deleteCategory;
 window.deleteExpense = deleteExpense;
+window.logout = logout; 
 
-initialSetup();
+// Expose the new event handlers globally so initialSetup can reference them
+window.handleCategorySubmit = handleCategorySubmit; 
+window.handleExpenseSubmit = handleExpenseSubmit; 
+
+// ===================== INITIALIZE ===================== 
+// Ensure the DOM is fully loaded before checking for forms and setting listeners
+document.addEventListener('DOMContentLoaded', checkAuth);

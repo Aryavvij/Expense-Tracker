@@ -5,7 +5,9 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken'); // Import for token handling
 
 const app = express();
-const port = process.env.PORT || 3001; 
+// V1.1: Forcing Redeploy
+const port = process.env.PORT || 3001;
+
 
 // --- Middleware ---
 app.use(cors()); 
