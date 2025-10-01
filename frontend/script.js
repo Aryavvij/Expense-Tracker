@@ -18,7 +18,7 @@ function checkAuth() {
     if (window.location.pathname.includes('index.html')) {
         if (!token) {
             // If on the main app page but no token, redirect to login
-            window.location.href = 'auth.html';
+            window.location.href = 'http://127.0.0.1:5501/auth.html';
         } else {
             // If token exists, proceed to load financial data
             initialSetup();
@@ -28,7 +28,7 @@ function checkAuth() {
     else if (window.location.pathname.includes('auth.html')) {
         if (token) {
             // If token exists, redirect straight to the main app
-            window.location.href = 'index.html';
+            window.location.href = 'http://127.0.0.1:5501/index.html';
         } else {
             // Set up form listeners if no token is found
             setupAuthListeners();
@@ -38,7 +38,7 @@ function checkAuth() {
 
 function logout() {
     localStorage.removeItem('token');
-    window.location.href = 'auth.html';
+    window.location.href = 'http://127.0.0.1:5501/auth.html';
 }
 
 function setupAuthListeners() {
@@ -80,7 +80,7 @@ async function handleLogin(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/login`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
-        window.location.href = 'index.html'; // Redirect to main app
+        window.location.href = 'http://127.0.0.1:5501/index.html';
     } catch (err) {
         messageDisplay.textContent = err.message || 'Login failed. Please check your credentials.';
         messageDisplay.style.display = 'block';
@@ -97,7 +97,7 @@ async function handleRegister(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/register`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
-        window.location.href = 'index.html'; // Redirect to main app
+        window.location.href = 'http://127.0.0.1:5501/index.html';
     } catch (err) {
         messageDisplay.textContent = err.message || 'Registration failed.';
         messageDisplay.style.display = 'block';
