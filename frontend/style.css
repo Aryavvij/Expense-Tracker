@@ -1,0 +1,275 @@
+/* ===================== BASE & UTILITIES ===================== */
+
+:root {
+  --primary-accent: #102A43; 
+  --text-primary: #1F2937; 
+  --text-secondary: #4B5563; 
+  --background-light: #F7F8FA; 
+  --border-color: #E5E7EB; 
+  --success-color: #10B981; 
+  --error-color: #EF4444; 
+  --white: #FFFFFF;
+  --radius: 8px;
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+body {
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--background-light);
+  margin: 0;
+  padding: 0;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
+}
+
+/* ===================== HEADINGS & TYPOGRAPHY ===================== */
+
+h1 {
+  text-align: center;
+  color: var(--primary-accent);
+  margin-bottom: 30px;
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em; 
+}
+
+h3 {
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color); 
+  padding-bottom: 10px;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+/* ===================== INPUT & BUTTON STYLES ===================== */
+
+.input-group {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 25px;
+}
+.filter-controls label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.budget-setup, .category-setup {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto; 
+    gap: 15px;
+    align-items: center;
+}
+
+/* FIX FOR MESSY EXPENSE AREA */
+
+.expense-entry form {
+    display: grid;
+    grid-template-columns: 1.5fr 1.5fr 1fr 1.5fr auto;
+    gap: 15px;
+    align-items: center;
+}
+
+
+input[type="number"],
+input[type="text"],
+input[type="date"],
+select {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background-color: var(--white);
+  transition: border-color 0.2s;
+  width: 100%; 
+  box-sizing: border-box;
+}
+
+input:focus, select:focus {
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 1px var(--primary-accent);
+  outline: none;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: var(--primary-accent);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--white);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: var(--shadow-subtle);
+  white-space: nowrap;
+}
+
+button:hover {
+  background-color: #00A2C0;
+  transform: translateY(-1px);
+}
+
+/* ===================== BUDGET OVERVIEW ===================== */
+
+.overview {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  margin-top: 25px;
+  padding: 15px 0;
+}
+
+.overview p {
+  flex: 1;
+  margin: 0;
+  padding: 18px 20px;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 500;
+  background-color: var(--white);
+  box-shadow: var(--shadow-subtle);
+}
+
+.overview span {
+    font-weight: 700;
+    color: var(--primary-accent);
+    font-size: 1.25rem;
+    display: block;
+    margin-top: 5px;
+}
+
+.overview p:nth-child(2) span { color: var(--error-color); } 
+.overview p:nth-child(3) span { color: var(--success-color); } 
+
+/* ===================== CATEGORY BREAKDOWN ===================== */
+
+.category-breakdown {
+  margin-top: 25px;
+}
+
+.category-box {
+  background-color: var(--white);
+  padding: 15px 20px;
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border-color);
+}
+
+.category-box strong {
+    font-size: 1rem;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 3px;
+    font-weight: 600;
+}
+
+.category-box button {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  margin-left: 8px;
+  opacity: 0.9;
+}
+button.edit-btn { background-color: var(--text-secondary); }
+button.edit-btn:hover { background-color: #5d6776; }
+button.delete-btn { background-color: var(--error-color); }
+button.delete-btn:hover { background-color: #CC3D3D; }
+
+
+/* ===================== EXPENSES TABLE ===================== */
+
+.expense-list {
+  margin-top: 25px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  border-radius: var(--radius);
+  overflow: hidden; 
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-subtle);
+}
+
+thead {
+  background-color: var(--background-light);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+th {
+  padding: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+th:last-child, td:last-child { text-align: center; } 
+
+td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+td:nth-child(3) { font-weight: 500; } 
+
+tbody tr:hover {
+  background-color: #F0F4F7;
+}
+
+/* ===================== RESPONSIVE ===================== */
+
+@media (max-width: 1000px) {
+    .container { margin: 20px; padding: 20px; }
+    .overview { flex-direction: column; gap: 10px; }
+}
+
+@media (max-width: 768px) {
+    .budget-setup, 
+    .category-setup, 
+    .expense-entry form {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .expense-entry form input,
+    .expense-entry form select,
+    .expense-entry form button {
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    .category-box {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .category-box > div {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end; 
+    }
+}

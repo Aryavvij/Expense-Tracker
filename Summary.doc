@@ -1,0 +1,38 @@
+Features :-->
+--> Budget Management: Users can set a total monthly budget and define custom expense categories with their own specific spending limits.
+--> Expense Tracking: Users can add new expenses by specifying the date, a predefined category, the amount, and an optional note.
+--> Real-time Overview: The application provides a live summary of the total budget, total amount spent, and the remaining budget.
+--> Category Breakdown: A dedicated section shows a breakdown of spending for each category, including the amount spent, the category limit, and the remaining amount.
+--> Expense History: All recorded expenses are displayed in a table, showing the date, category, amount, and note for each entry.
+--> Expense Deletion: Users can delete individual expenses from the history, which automatically updates the budget overview and category breakdown.
+
+Technologies & Concepts :-->
+
+--> Front-End Application: All data for budgets, categories, and expenses is stored temporarily in the browser's memory and will be lost upon refreshing the page.
+--> HTML: The structure is organized into logical sections (budget-setup, category-setup, etc.) and uses form elements (<input>, <select>, <button>) for user interaction. 
+    - The <table> element is used to display the detailed list of expenses.
+--> CSS: The styling uses Flexbox (display: flex) for aligning form elements and creating a clean, responsive layout. 
+    - It also uses standard CSS properties for box-shadows, rounded corners, and a consistent color scheme to provide a polished look.
+--> JavaScript: The core logic is handled by JavaScript.
+    - DOM Manipulation: The code uses document.getElementById to read user input and dynamically update elements like the overview displays, the category breakdown, and the expense table. 
+    - It uses innerHTML and createElement to build the list of expenses and categories.
+    - Data Structures: The application uses JavaScript arrays (categories, expenses) and objects to store and manage all the data.
+    - Functions: The code is well-organized into functions (setBudget, updateOverview, deleteExpense) to encapsulate specific pieces of functionality.
+    - Event Handling: addEventListener is used on the form submission events (submit) to prevent default behavior and run the expense-tracking logic. 
+    - It also uses inline onclick attributes for the budget button and delete buttons.
+
+    mongodb+srv://aryavvij_db_user:<db_password>@expensetracker.qqq8mmk.mongodb.net/?retryWrites=true&w=majority&appName=ExpenseTracker
+
+The final application successfully achieves the following:
+- Monthly Isolation: All budget limits, defined categories, and logged expenses are stored and retrieved uniquely for the specific Month and Year selected by the user.
+- Budgeting: Supports setting a Total Monthly Budget and defining multiple expense categories (e.g., Food, Travel) with individual limits.
+- Data Management: Full CRUD (Create, Read, Update, Delete) support for expense categories and expenses.
+- Real-Time Tracking: Dynamically calculates and displays Total Spent and Remaining Budget based on the data for the currently selected period.
+- Design: The final UI uses a clean, neat aesthetic with a Navy Blue and Cream color palette, featuring organized, grid-based input forms.
+
+Final Technical Stack and Configuration
+- The application is built using the MERN stack principles:
+- Backend (API): Built with Node.js and Express.js. Runs locally on port 3001.
+- CORS Policy: Set to the universal app.use(cors()) to ensure maximum compatibility between the frontend and the running API.
+- Database: MongoDB Atlas is used for persistent, cloud-based data storage, managed via Mongoose models.
+- Frontend (UI): Built with pure HTML, CSS, and JavaScript. Data retrieval uses the fetch API
