@@ -5,7 +5,6 @@ const expenseSchema = new mongoose.Schema({
   category: { type: String, required: true },
   amount: { type: Number, required: true },
   note: { type: String },
-  // NEW: Link to the User
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
 

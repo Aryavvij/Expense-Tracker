@@ -3,12 +3,11 @@ const bcrypt = require('bcryptjs');
 const User = require('./models/user.model');
 const express = require('express');
 const router = express.Router(); 
-
-// IMPORTANT: Add this line to your .env file or production environment variables!
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secure_jwt_secret'; 
 const SALT_ROUNDS = 10;
 
 // ======================= REGISTER =======================
+
 router.post('/register', async (req, res) => { 
   try {
     const { email, password } = req.body;
@@ -42,6 +41,7 @@ router.post('/register', async (req, res) => {
 });
 
 // ======================= LOGIN =======================
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;

@@ -1,11 +1,8 @@
-// Set this to your live Render API URL 
 const API_URL = "https://expense-tracker-v5ei.onrender.com"; 
 
 console.log("--- SCRIPT LOADED SUCCESSFULLY ---"); 
 
-// ======================================================================
 // 1. AUTHENTICATION CORE & HANDLERS 
-// ======================================================================
 
 function getToken() {
     return localStorage.getItem('token');
@@ -13,7 +10,7 @@ function getToken() {
 
 function logout() {
     localStorage.removeItem('token');
-    window.location.href = '/index.html'; // LOGOUT -> LOGIN PAGE
+    window.location.href = '/index.html'; 
 }
 
 function setupAuthListeners() {
@@ -53,7 +50,6 @@ async function handleLogin(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/login`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
-        // REDIRECT FIX: Login success goes to Dashboard
         window.location.href = '/dashboard.html'; 
     } catch (err) {
         messageDisplay.textContent = err.message || 'Login failed. Please check your credentials.';
@@ -71,7 +67,6 @@ async function handleRegister(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/register`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
-        // REDIRECT FIX: Register success goes to Dashboard
         window.location.href = '/dashboard.html';
     } catch (err) {
         messageDisplay.textContent = err.message || 'Registration failed.';
@@ -79,10 +74,7 @@ async function handleRegister(e) {
     }
 }
 
-// ======================================================================
 // 2. DATA FETCHING & RENDERING FUNCTIONS 
-// (All helper functions are defined here)
-// ======================================================================
 
 async function fetchData(url, data = null, method = 'GET') {
     const config = {
@@ -102,12 +94,12 @@ async function fetchData(url, data = null, method = 'GET') {
         let errorBody = await response.text();
 
         if (response.status === 401 && window.location.pathname.includes('dashboard.html')) {
-            logout(); // Log out and redirect if token is bad on the dashboard
+            logout(); 
         }
         
         try {
             errorBody = JSON.parse(errorBody);
-        } catch(e) { /* ignored */ }
+        } catch(e) { }
         
         const errorMessage = errorBody.message || errorBody.error || `HTTP Error! Status: ${response.status}`;
         throw new Error(errorMessage);
@@ -115,7 +107,6 @@ async function fetchData(url, data = null, method = 'GET') {
     return response.status !== 204 ? await response.json() : {};
 }
 
-// ... (All other rendering/data functions remain here) ...
 
 async function loadDataForMonth() {
   const monthSelect = document.getElementById("monthSelect");
@@ -214,10 +205,7 @@ function renderExpenseTable(expenses) {
   });
 }
 
-// ======================================================================
 // 3. BUDGET, CATEGORY, EXPENSE HANDLERS 
-// (All handler definitions are here)
-// ======================================================================
 
 async function setBudget() {
   console.log("--- setBudget function called ---"); 
@@ -359,7 +347,6 @@ function initialSetup() {
       return; 
   }
 
-  // Populate months
   for (let i = 0; i < 12; i++) {
     const monthName = new Date(null, i, 1).toLocaleString('en-US', { month: 'long' });
     const option = document.createElement("option");
@@ -369,7 +356,6 @@ function initialSetup() {
     if (i === currentMonth) option.selected = true;
   }
 
-  // Populate years
   const startYear = currentYear - 1;
   const endYear = 2029; 
   
@@ -383,59 +369,44 @@ function initialSetup() {
 
   console.log("TRACE 2: Month/Year dropdowns populated."); 
 
-  // Attach Month/Year change listeners
   monthSelect.addEventListener('change', loadDataForMonth);
   yearSelect.addEventListener('change', loadDataForMonth);
 
-  // 1. Set Budget Button (attached by ID now - Requires id="setBudgetButton" in index.html)
   const setBudgetButton = document.getElementById("setBudgetButton");
   if (setBudgetButton) {
       setBudgetButton.addEventListener("click", setBudget);
       console.log("TRACE 3: Set Budget listener attached."); 
   }
-  
-  // 2. Category Form Submit
   document.getElementById("categoryForm").addEventListener("submit", handleCategorySubmit); 
   
-  // 3. Expense Form Submit
   document.getElementById("expenseForm").addEventListener("submit", handleExpenseSubmit); 
   
-  console.log("TRACE 4: All form listeners attached successfully."); // <-- FINAL SUCCESS TRACE
+  console.log("TRACE 4: All form listeners attached successfully."); 
 
   loadDataForMonth();
 }
 
 // ===================== 5. EXPOSE FUNCTIONS & INITIALIZE ===================== 
 
-// ... (all functions above checkAuth remain the same) ...
-
 function checkAuth() {
   const token = getToken();
   
-  // Check if the current page is the dashboard (the tracker UI)
   if (window.location.pathname.includes('dashboard.html')) {
       if (!token) {
-        // If no token on dashboard, send to login page
         window.location.href = '/index.html';
       } else {
           initialSetup();
       }
   } 
-  // Check if the current page is the login page (index.html or the root path '/')
   else {
       if (token) {
-        // If token exists, send to dashboard.
         window.location.href = '/dashboard.html';
       } else {
-          // No token? Stay on login page and set up forms.
           setupAuthListeners();
       }
   }
 }
 
-// ... (rest of the script remains the same) ...
-
-// Expose functions globally 
 window.setBudget = setBudget;
 window.editCategory = editCategory;
 window.deleteCategory = deleteCategory;
