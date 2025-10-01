@@ -146,14 +146,24 @@ function initialSetup() {
   monthSelect.addEventListener('change', loadDataForMonth);
   yearSelect.addEventListener('change', loadDataForMonth);
 
-  // FIX: Move the main form listeners inside initialSetup to ensure they are attached ONLY on index.html
+  // --- FIX: Attach ALL form and button listeners safely ---
+  
+  // 1. Set Budget Button (attached by ID now)
+  const setBudgetButton = document.getElementById("setBudgetButton");
+  if (setBudgetButton) {
+      setBudgetButton.addEventListener("click", setBudget);
+  }
+
+  // 2. Category Form Submit
   document.getElementById("categoryForm").addEventListener("submit", handleCategorySubmit); 
+  
+  // 3. Expense Form Submit
   document.getElementById("expenseForm").addEventListener("submit", handleExpenseSubmit); 
-  // END FIX
+  
+  // --- END FIX ---
 
   loadDataForMonth();
 }
-
 // ===================== BUDGET SETUP ===================== 
 // ... (Your existing setBudget function remains here) ...
 async function setBudget() {
