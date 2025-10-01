@@ -407,24 +407,33 @@ function initialSetup() {
 
 // ===================== 5. EXPOSE FUNCTIONS & INITIALIZE ===================== 
 
+// ... (all functions above checkAuth remain the same) ...
+
 function checkAuth() {
-    const token = getToken();
-    
-    if (window.location.pathname.includes('dashboard.html')) {
-        if (!token) {
-          window.location.href = '/index.html';
-        } else {
-            initialSetup();
-        }
-    } 
-    else if (window.location.pathname.includes('index.html')) {
-        if (token) {
-          window.location.href = '/dashboard.html';
-        } else {
-            setupAuthListeners();
-        }
-    }
+  const token = getToken();
+  
+  // Check if the current page is the dashboard (the tracker UI)
+  if (window.location.pathname.includes('dashboard.html')) {
+      if (!token) {
+        // If no token on dashboard, send to login page
+        window.location.href = '/index.html';
+      } else {
+          initialSetup();
+      }
+  } 
+  // Check if the current page is the login page (index.html or the root path '/')
+  else {
+      if (token) {
+        // If token exists, send to dashboard.
+        window.location.href = '/dashboard.html';
+      } else {
+          // No token? Stay on login page and set up forms.
+          setupAuthListeners();
+      }
+  }
 }
+
+// ... (rest of the script remains the same) ...
 
 // Expose functions globally 
 window.setBudget = setBudget;
