@@ -1,5 +1,4 @@
-// Set this to your live Render API URL if you are testing the deployed site, 
-// or http://127.0.0.1:3001 if you are testing locally.
+// Set this to your live Render API URL 
 const API_URL = "https://expense-tracker-v5ei.onrender.com"; 
 
 console.log("--- SCRIPT LOADED SUCCESSFULLY ---"); 
@@ -14,8 +13,7 @@ function getToken() {
 
 function logout() {
     localStorage.removeItem('token');
-    // FIX: Redirects to the login page, which we now know is the new index.html
-    window.location.href = '/'; 
+    window.location.href = '/index.html'; // LOGOUT -> LOGIN PAGE
 }
 
 function setupAuthListeners() {
@@ -55,7 +53,7 @@ async function handleLogin(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/login`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
-        // FIX: Redirects to the dashboard page
+        // REDIRECT FIX: Login success goes to Dashboard
         window.location.href = '/dashboard.html'; 
     } catch (err) {
         messageDisplay.textContent = err.message || 'Login failed. Please check your credentials.';
@@ -73,7 +71,7 @@ async function handleRegister(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/register`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
-        // FIX: Redirects to the dashboard page
+        // REDIRECT FIX: Register success goes to Dashboard
         window.location.href = '/dashboard.html';
     } catch (err) {
         messageDisplay.textContent = err.message || 'Registration failed.';
@@ -83,6 +81,7 @@ async function handleRegister(e) {
 
 // ======================================================================
 // 2. DATA FETCHING & RENDERING FUNCTIONS 
+// (All helper functions are defined here)
 // ======================================================================
 
 async function fetchData(url, data = null, method = 'GET') {
@@ -102,8 +101,8 @@ async function fetchData(url, data = null, method = 'GET') {
     if (!response.ok) {
         let errorBody = await response.text();
 
-        if (response.status === 401 && !window.location.pathname.includes('index.html')) {
-            logout(); 
+        if (response.status === 401 && window.location.pathname.includes('dashboard.html')) {
+            logout(); // Log out and redirect if token is bad on the dashboard
         }
         
         try {
@@ -114,6 +113,43 @@ async function fetchData(url, data = null, method = 'GET') {
         throw new Error(errorMessage);
     }
     return response.status !== 204 ? await response.json() : {};
+}
+
+// ... (All other rendering/data functions remain here) ...
+
+async function loadDataForMonth() {
+  const monthSelect = document.getElementById("monthSelect");
+  const yearSelect = document.getElementById("yearSelect");
+
+  if (!monthSelect || !yearSelect || !monthSelect.value || !yearSelect.value || isNaN(parseInt(monthSelect.value))) {
+      console.warn("Month/Year selection not ready. Skipping data load.");
+      return; 
+  }
+  
+  try {
+    const month = parseInt(monthSelect.value);
+    const year = parseInt(yearSelect.value);
+
+    const summary = await fetchData(`${API_URL}/summary?month=${month}&year=${year}`);
+    
+    const totalBudgetCategory = summary.find(c => c.isBudget) || { limit: 0, spent: 0, _id: null };
+    const expenseCategories = summary.filter(c => !c.isBudget);
+
+    updateOverview(totalBudgetCategory, expenseCategories);
+    updateCategorySelect(expenseCategories);
+    renderCategoryTable(expenseCategories);
+
+    const expenses = await fetchData(`${API_URL}/expenses?month=${month}&year=${year}`);
+    renderExpenseTable(expenses);
+
+  } catch (err) {
+    console.error("Error loading data:", err);
+
+    updateOverview({ limit: 0, spent: 0, _id: null }, []);
+    updateCategorySelect([]);
+    renderCategoryTable([]);
+    renderExpenseTable([]);
+  }
 }
 
 function updateOverview(budgetCat, expenseCats) {
@@ -178,44 +214,9 @@ function renderExpenseTable(expenses) {
   });
 }
 
-async function loadDataForMonth() {
-  const monthSelect = document.getElementById("monthSelect");
-  const yearSelect = document.getElementById("yearSelect");
-
-  // CRITICAL FIX: Guard clause to prevent fetching with NaN/null values.
-  if (!monthSelect || !yearSelect || !monthSelect.value || !yearSelect.value || isNaN(parseInt(monthSelect.value))) {
-      console.warn("Month/Year selection not ready. Skipping data load.");
-      return; 
-  }
-  
-  try {
-    const month = parseInt(monthSelect.value);
-    const year = parseInt(yearSelect.value);
-
-    const summary = await fetchData(`${API_URL}/summary?month=${month}&year=${year}`);
-    
-    const totalBudgetCategory = summary.find(c => c.isBudget) || { limit: 0, spent: 0, _id: null };
-    const expenseCategories = summary.filter(c => !c.isBudget);
-
-    updateOverview(totalBudgetCategory, expenseCategories);
-    updateCategorySelect(expenseCategories);
-    renderCategoryTable(expenseCategories);
-
-    const expenses = await fetchData(`${API_URL}/expenses?month=${month}&year=${year}`);
-    renderExpenseTable(expenses);
-
-  } catch (err) {
-    console.error("Error loading data:", err);
-
-    updateOverview({ limit: 0, spent: 0, _id: null }, []);
-    updateCategorySelect([]);
-    renderCategoryTable([]);
-    renderExpenseTable([]);
-  }
-}
-
 // ======================================================================
 // 3. BUDGET, CATEGORY, EXPENSE HANDLERS 
+// (All handler definitions are here)
 // ======================================================================
 
 async function setBudget() {
@@ -341,7 +342,6 @@ async function deleteExpense(id) {
 function initialSetup() {
   const monthSelect = document.getElementById("monthSelect");
   
-  // CRITICAL FIX: If the main element (Month Select) isn't here, stop executing main app code.
   if (!monthSelect) {
       return; 
   }
@@ -354,7 +354,6 @@ function initialSetup() {
 
   const yearSelect = document.getElementById("yearSelect");
   
-  // CRITICAL SAFETY CHECK: Ensure yearSelect exists before trying to append children
   if (!yearSelect) {
       console.error("TRACE ERROR: yearSelect element not found.");
       return; 
@@ -408,36 +407,24 @@ function initialSetup() {
 
 // ===================== 5. EXPOSE FUNCTIONS & INITIALIZE ===================== 
 
-// script.js (Simplified and corrected checkAuth)
-
 function checkAuth() {
-  const token = getToken();
-  // CRITICAL: We need to know if the page has the dashboard elements.
-  const isDashboardPage = window.location.pathname.includes('dashboard.html');
-  
-  if (isDashboardPage) {
-      // If we are on the dashboard page, we MUST have a token.
-      if (!token) {
-          // No token? Send to login page (index.html).
-          window.location.href = '/index.html'; 
-      } else {
-          // Token found? Load the buttons and data.
-          initialSetup();
-      }
-  } 
-  else if (window.location.pathname.includes('index.html')) {
-      // If we are on the login page (index.html), check if we should be redirected.
-      if (token) {
-          // Token found? Send to dashboard.
-          window.location.href = '/dashboard.html'; 
-      } else {
-          // No token? Stay on login page and set up forms.
-          setupAuthListeners();
-      }
-  }
+    const token = getToken();
+    
+    if (window.location.pathname.includes('dashboard.html')) {
+        if (!token) {
+          window.location.href = '/index.html';
+        } else {
+            initialSetup();
+        }
+    } 
+    else if (window.location.pathname.includes('index.html')) {
+        if (token) {
+          window.location.href = '/dashboard.html';
+        } else {
+            setupAuthListeners();
+        }
+    }
 }
-
-// ... rest of the code ...
 
 // Expose functions globally 
 window.setBudget = setBudget;
