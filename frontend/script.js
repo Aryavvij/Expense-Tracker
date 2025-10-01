@@ -325,42 +325,81 @@ async function fetchData(url, data = null, method = 'GET') {
     return response.status !== 204 ? await response.json() : {};
 }
 
-async function loadDataForMonth() {
-  const monthSelect = document.getElementById("monthSelect");
-  const yearSelect = document.getElementById("yearSelect");
+// script.js
 
-  // CRITICAL FIX: Guard clause to prevent fetching with NaN/null values.
-  if (!monthSelect || !yearSelect || !monthSelect.value || !yearSelect.value || isNaN(parseInt(monthSelect.value))) {
-      console.warn("Month/Year selection not ready. Skipping data load.");
+// ... (functions remain the same above) ...
+
+console.log("--- SCRIPT LOADED SUCCESSFULLY ---"); // TRACE 0: Confirms script started
+
+// ===================== INITIAL SETUP (financial data loading) ===================== 
+
+function initialSetup() {
+  const monthSelect = document.getElementById("monthSelect");
+  
+  if (!monthSelect) {
       return; 
   }
+
+  console.log("TRACE 1: Initial setup starting."); 
+
+  const date = new Date();
+  const currentMonth = date.getMonth();
+  const currentYear = date.getFullYear();
+
+  const yearSelect = document.getElementById("yearSelect");
   
-  try {
-    // Only parse and fetch if values are guaranteed to be present
-    const month = parseInt(monthSelect.value);
-    const year = parseInt(yearSelect.value);
-
-    const summary = await fetchData(`${API_URL}/summary?month=${month}&year=${year}`);
-    
-    const totalBudgetCategory = summary.find(c => c.isBudget) || { limit: 0, spent: 0, _id: null };
-    const expenseCategories = summary.filter(c => !c.isBudget);
-
-    updateOverview(totalBudgetCategory, expenseCategories);
-    updateCategorySelect(expenseCategories);
-    renderCategoryTable(expenseCategories);
-
-    const expenses = await fetchData(`${API_URL}/expenses?month=${month}&year=${year}`);
-    renderExpenseTable(expenses);
-
-  } catch (err) {
-    console.error("Error loading data:", err);
-
-    updateOverview({ limit: 0, spent: 0, _id: null }, []);
-    updateCategorySelect([]);
-    renderCategoryTable([]);
-    renderExpenseTable([]);
+  // CRITICAL SAFETY CHECK: Ensure yearSelect exists before trying to append children
+  if (!yearSelect) {
+      console.error("TRACE ERROR: yearSelect element not found.");
+      return; 
   }
+
+  // Populate months
+  for (let i = 0; i < 12; i++) {
+    const monthName = new Date(null, i, 1).toLocaleString('en-US', { month: 'long' });
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = monthName;
+    monthSelect.appendChild(option);
+    if (i === currentMonth) option.selected = true;
+  }
+
+  // Populate years
+  const startYear = currentYear - 1;
+  const endYear = 2029; 
+  
+  for (let y = startYear; y <= endYear; y++) {
+    const option = document.createElement("option");
+    option.value = y;
+    option.textContent = y;
+    if (y === currentYear) option.selected = true;
+    yearSelect.appendChild(option);
+  }
+
+  console.log("TRACE 2: Month/Year dropdowns populated."); 
+
+  // Attach Month/Year change listeners
+  monthSelect.addEventListener('change', loadDataForMonth);
+  yearSelect.addEventListener('change', loadDataForMonth);
+
+  // 1. Set Budget Button 
+  const setBudgetButton = document.getElementById("setBudgetButton");
+  if (setBudgetButton) {
+      setBudgetButton.addEventListener("click", setBudget);
+      console.log("TRACE 3: Set Budget listener attached."); 
+  }
+  
+  // 2. Category Form Submit
+  document.getElementById("categoryForm").addEventListener("submit", handleCategorySubmit); 
+  
+  // 3. Expense Form Submit
+  document.getElementById("expenseForm").addEventListener("submit", handleExpenseSubmit); 
+  
+  console.log("TRACE 4: All form listeners attached successfully."); // <-- FINAL SUCCESS TRACE
+
+  loadDataForMonth();
 }
+// ... (rest of the script remains the same) ...
 
 function updateOverview(budgetCat, expenseCats) {
   const totalBudget = budgetCat.limit || 0;
