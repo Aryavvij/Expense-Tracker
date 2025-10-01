@@ -14,7 +14,7 @@ function getToken() {
 
 function logout() {
     localStorage.removeItem('token');
-    window.location.href = 'http://127.0.0.1:5501/auth.html';
+    window.location.href = '/auth.html';
 }
 
 function setupAuthListeners() {
@@ -54,7 +54,7 @@ async function handleLogin(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/login`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
-        window.location.href = 'http://127.0.0.1:5501/index.html';
+        window.location.href = '/index.html';
     } catch (err) {
         messageDisplay.textContent = err.message || 'Login failed. Please check your credentials.';
         messageDisplay.style.display = 'block';
@@ -71,7 +71,7 @@ async function handleRegister(e) {
     try {
         const data = await fetchData(`${API_URL}/auth/register`, { email, password }, "POST");
         localStorage.setItem('token', data.token);
-        window.location.href = 'http://127.0.0.1:5501/index.html';
+        window.location.href = '/index.html';
     } catch (err) {
         messageDisplay.textContent = err.message || 'Registration failed.';
         messageDisplay.style.display = 'block';
@@ -416,14 +416,14 @@ function checkAuth() {
     
     if (window.location.pathname.includes('index.html')) {
         if (!token) {
-            window.location.href = 'http://127.0.0.1:5501/auth.html';
+          window.location.href = '/auth.html';
         } else {
             initialSetup();
         }
     } 
     else if (window.location.pathname.includes('auth.html')) {
         if (token) {
-            window.location.href = 'http://127.0.0.1:5501/index.html';
+          window.location.href = '/index.html';
         } else {
             setupAuthListeners();
         }
@@ -479,7 +479,7 @@ function renderExpenseTable(expenses) {
 
   expenses.forEach(exp => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `
+    tr.innerHTML = `c
       <td>${new Date(exp.date).toLocaleDateString()}</td>
       <td>${exp.category}</td>
       <td>₹${exp.amount.toFixed(2)}</td>
